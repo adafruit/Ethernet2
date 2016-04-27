@@ -7,6 +7,12 @@
 #include "utility/w5500.h"
 #include "utility/socket.h"
 
+#if ARDUINO >= 156 || TEENSYDUINO >= 120
+extern void yield(void);
+#else
+#define yield()
+#endif
+
 static uint16_t local_port;
 
 /**
@@ -18,6 +24,7 @@ uint8_t socket(SOCKET s, uint8_t protocol, uint16_t port, uint8_t flag)
   if ((protocol == SnMR::TCP) || (protocol == SnMR::UDP) || (protocol == SnMR::IPRAW) || (protocol == SnMR::MACRAW) || (protocol == SnMR::PPPOE))
   {
     close(s);
+    SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
     w5500.writeSnMR(s, protocol | flag);
     if (port != 0) {
       w5500.writeSnPORT(s, port);
@@ -29,20 +36,24 @@ uint8_t socket(SOCKET s, uint8_t protocol, uint16_t port, uint8_t flag)
 
     w5500.execCmdSn(s, Sock_OPEN);
     
+    SPI.endTransaction();
     return 1;
   }
 
   return 0;
 }
 
+//GOPICOM: DONDE ESTA EL socketStatus??? agregarlos
 
 /**
  * @brief	This function close the socket and parameter is "s" which represent the socket number
  */
 void close(SOCKET s)
 {
+  SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
   w5500.execCmdSn(s, Sock_CLOSE);
   w5500.writeSnIR(s, 0xFF);
+  SPI.endTransaction();
 }
 
 
@@ -52,9 +63,13 @@ void close(SOCKET s)
  */
 uint8_t listen(SOCKET s)
 {
-  if (w5500.readSnSR(s) != SnSR::INIT)
-    return 0;
+  SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+  if (w5500.readSnSR(s) != SnSR::INIT) {
+     SPI.endTransaction();
+     return 0;
+  }
   w5500.execCmdSn(s, Sock_LISTEN);
+  SPI.endTransaction();
   return 1;
 }
 
@@ -76,10 +91,11 @@ uint8_t connect(SOCKET s, uint8_t * addr, uint16_t port)
     return 0;
 
   // set destination IP
+  SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
   w5500.writeSnDIPR(s, addr);
   w5500.writeSnDPORT(s, port);
   w5500.execCmdSn(s, Sock_CONNECT);
-
+  SPI.endTransaction();
   return 1;
 }
 
@@ -91,7 +107,9 @@ uint8_t connect(SOCKET s, uint8_t * addr, uint16_t port)
  */
 void disconnect(SOCKET s)
 {
+  SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
   w5500.execCmdSn(s, Sock_DISCON);
+  SPI.endTransaction();
 }
 
 
@@ -113,17 +131,21 @@ uint16_t send(SOCKET s, const uint8_t * buf, uint16_t len)
   // if freebuf is available, start.
   do 
   {
+    SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
     freesize = w5500.getTXFreeSize(s);
     status = w5500.readSnSR(s);
+    SPI.endTransaction();
     if ((status != SnSR::ESTABLISHED) && (status != SnSR::CLOSE_WAIT))
     {
       ret = 0; 
       break;
     }
+    yield();
   } 
   while (freesize < ret);
 
   // copy data
+  SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
   w5500.send_data_processing(s, (uint8_t *)buf, ret);
   w5500.execCmdSn(s, Sock_SEND);
 
@@ -133,12 +155,17 @@ uint16_t send(SOCKET s, const uint8_t * buf, uint16_t len)
     /* m2008.01 [bj] : reduce code */
     if ( w5500.readSnSR(s) == SnSR::CLOSED )
     {
+      SPI.endTransaction();
       close(s);
       return 0;
     }
+    SPI.endTransaction();
+    yield();
+    SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
   }
   /* +2008.01 bj */
   w5500.writeSnIR(s, SnIR::SEND_OK);
+  SPI.endTransaction();
   return ret;
 }
 
@@ -152,6 +179,7 @@ uint16_t send(SOCKET s, const uint8_t * buf, uint16_t len)
 int16_t recv(SOCKET s, uint8_t *buf, int16_t len)
 {
   // Check how much data is available
+  SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
   int16_t ret = w5500.getRXReceivedSize(s);
   if ( ret == 0 )
   {
@@ -179,8 +207,10 @@ int16_t recv(SOCKET s, uint8_t *buf, int16_t len)
     w5500.execCmdSn(s, Sock_RECV);
   }
   return ret;
+  SPI.endTransaction();
 }
 
+// WHERE's recvAvailable??? this library is incomplete
 
 /**
  * @brief	Returns the first byte in the receive queue (no checking)
@@ -189,8 +219,9 @@ int16_t recv(SOCKET s, uint8_t *buf, int16_t len)
  */
 uint16_t peek(SOCKET s, uint8_t *buf)
 {
+  SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
   w5500.recv_data_processing(s, buf, 1, 1);
-
+  SPI.endTransaction();
   return 1;
 }
 
@@ -218,7 +249,8 @@ uint16_t sendto(SOCKET s, const uint8_t *buf, uint16_t len, uint8_t *addr, uint1
     ret = 0;
   }
   else
-  {
+  { 
+    SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
     w5500.writeSnDIPR(s, addr);
     w5500.writeSnDPORT(s, port);
 
@@ -233,12 +265,17 @@ uint16_t sendto(SOCKET s, const uint8_t *buf, uint16_t len, uint8_t *addr, uint1
       {
         /* +2008.01 [bj]: clear interrupt */
         w5500.writeSnIR(s, (SnIR::SEND_OK | SnIR::TIMEOUT)); /* clear SEND_OK & TIMEOUT */
+        SPI.endTransaction();
         return 0;
       }
+      SPI.endTransaction();
+      yield();
+      SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
     }
 
     /* +2008.01 bj */
     w5500.writeSnIR(s, SnIR::SEND_OK);
+    SPI.endTransaction();
   }
   return ret;
 }
@@ -258,6 +295,7 @@ uint16_t recvfrom(SOCKET s, uint8_t *buf, uint16_t len, uint8_t *addr, uint16_t 
 
   if ( len > 0 )
   {
+    SPI.beginTransaction(SPI_ETHERNET_SETTINGS);  
     ptr = w5500.readSnRX_RD(s);
     switch (w5500.readSnMR(s) & 0x07)
     {
@@ -312,6 +350,7 @@ uint16_t recvfrom(SOCKET s, uint8_t *buf, uint16_t len, uint8_t *addr, uint16_t 
       break;
     }
     w5500.execCmdSn(s, Sock_RECV);
+    SPI.endTransaction();
   }
   return data_len;
 }
@@ -335,7 +374,7 @@ uint16_t igmpsend(SOCKET s, const uint8_t * buf, uint16_t len)
 
   if (ret == 0)
     return 0;
-
+  SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
   w5500.send_data_processing(s, (uint8_t *)buf, ret);
   w5500.execCmdSn(s, Sock_SEND);
 
@@ -346,18 +385,24 @@ uint16_t igmpsend(SOCKET s, const uint8_t * buf, uint16_t len)
     {
       /* in case of igmp, if send fails, then socket closed */
       /* if you want change, remove this code. */
+      SPI.endTransaction();
       close(s);
       return 0;
     }
+    SPI.endTransaction();
+    yield();
+    SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
   }
 
   w5500.writeSnIR(s, SnIR::SEND_OK);
+  SPI.endTransaction();
   return ret;
 }
 
 uint16_t bufferData(SOCKET s, uint16_t offset, const uint8_t* buf, uint16_t len)
 {
   uint16_t ret =0;
+  SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
   if (len > w5500.getTXFreeSize(s))
   {
     ret = w5500.getTXFreeSize(s); // check size not to exceed MAX size.
@@ -367,6 +412,7 @@ uint16_t bufferData(SOCKET s, uint16_t offset, const uint8_t* buf, uint16_t len)
     ret = len;
   }
   w5500.send_data_processing_offset(s, offset, buf, ret);
+  SPI.endTransaction();
   return ret;
 }
 
@@ -382,14 +428,17 @@ int startUDP(SOCKET s, uint8_t* addr, uint16_t port)
   }
   else
   {
+    SPI.beginTransaction(SPI_ETHERNET_SETTINGS);  
     w5500.writeSnDIPR(s, addr);
     w5500.writeSnDPORT(s, port);
+    SPI.endTransaction();
     return 1;
   }
 }
 
 int sendUDP(SOCKET s)
 {
+  SPI.beginTransaction(SPI_ETHERNET_SETTINGS);  
   w5500.execCmdSn(s, Sock_SEND);
 		
   /* +2008.01 bj */
@@ -399,13 +448,17 @@ int sendUDP(SOCKET s)
     {
       /* +2008.01 [bj]: clear interrupt */
       w5500.writeSnIR(s, (SnIR::SEND_OK|SnIR::TIMEOUT));
+      SPI.endTransaction();
       return 0;
     }
+    SPI.endTransaction();
+    yield();
+    SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
   }
 
   /* +2008.01 bj */	
   w5500.writeSnIR(s, SnIR::SEND_OK);
-
+  SPI.endTransaction();
   /* Sent ok */
   return 1;
 }
