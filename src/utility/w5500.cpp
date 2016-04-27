@@ -21,35 +21,23 @@
 // W5500 controller instance
 W5500Class w5500;
 
-#define SPI_CS 10
-#define slaveSelectPin 10
+// SPI details
+SPISettings wiznet_SPI_settings(800000, MSBFIRST, SPI_MODE0);
+uint8_t SPI_CS;
 
-void W5500Class::init(void)
+void W5500Class::init(uint8_t ss_pin)
 {
-    delay(1000);
-#if defined(ARDUINO_ARCH_AVR) || defined(ARDUINO_ARCH_SAMD)
-    initSS();
-    SPI.begin();
-/*#elif defined(ARDUINO_ARCH_SAMD)
-	pinMode (slaveSelectPin, OUTPUT);
-	digitalWrite(slaveSelectPin, HIGH);
-	SPI.begin();
-	//SPI.setClockDivider(2);
-	//SPI.setDataMode(SPI_MODE0);	*/
-#else
-  SPI.begin(SPI_CS);
-  // Set clock to 4Mhz (w5500 should support up to about 14Mhz)
-//  SPI.setClockDivider(SPI_CS, 21);
-//  SPI.setClockDivider(SPI_CS, 6); // 14 Mhz, ok  
-//  SPI.setClockDivider(SPI_CS, 3); // 28 Mhz, ok 
-  SPI.setClockDivider(SPI_CS, 2); // 42 Mhz, ok 
-  SPI.setDataMode(SPI_CS, SPI_MODE0);
-#endif
-    for (int i=0; i<MAX_SOCK_NUM; i++) {
-        uint8_t cntl_byte = (0x0C + (i<<5));
-        write( 0x1E, cntl_byte, 2); //0x1E - Sn_RXBUF_SIZE
-        write( 0x1F, cntl_byte, 2); //0x1F - Sn_TXBUF_SIZE
-    }
+  SPI_CS = ss_pin;
+
+  delay(1000);
+  initSS();
+  SPI.begin();
+
+  for (int i=0; i<MAX_SOCK_NUM; i++) {
+    uint8_t cntl_byte = (0x0C + (i<<5));
+    write( 0x1E, cntl_byte, 2); //0x1E - Sn_RXBUF_SIZE
+    write( 0x1F, cntl_byte, 2); //0x1F - Sn_TXBUF_SIZE
+  }
 }
 
 uint16_t W5500Class::getTXFreeSize(SOCKET s)
@@ -85,14 +73,12 @@ void W5500Class::send_data_processing(SOCKET s, const uint8_t *data, uint16_t le
 
 void W5500Class::send_data_processing_offset(SOCKET s, uint16_t data_offset, const uint8_t *data, uint16_t len)
 {
-
     uint16_t ptr = readSnTX_WR(s);
     uint8_t cntl_byte = (0x14+(s<<5));
     ptr += data_offset;
     write(ptr, cntl_byte, data, len);
     ptr += len;
     writeSnTX_WR(s, ptr);
-    
 }
 
 void W5500Class::recv_data_processing(SOCKET s, uint8_t *data, uint16_t len, uint8_t peek)
@@ -116,34 +102,21 @@ void W5500Class::read_data(SOCKET s, volatile uint16_t src, volatile uint8_t *ds
 
 uint8_t W5500Class::write(uint16_t _addr, uint8_t _cb, uint8_t _data)
 {
-#if defined(ARDUINO_ARCH_AVR)|| defined(ARDUINO_ARCH_SAMD)
+    SPI.beginTransaction(wiznet_SPI_settings);
     setSS();  
-	//SerialUSB.println("dentro avr");
     SPI.transfer(_addr >> 8);
     SPI.transfer(_addr & 0xFF);
     SPI.transfer(_cb);
     SPI.transfer(_data);
     resetSS();
-/*#elif defined(ARDUINO_ARCH_SAMD)
-	digitalWrite(slaveSelectPin, LOW);
-	//SerialUSB.println("dentro samd");
-    SPI.transfer(_addr >> 8);
-    SPI.transfer(_addr & 0xFF);
-    SPI.transfer(_cb);
-    SPI.transfer(_data);
-    digitalWrite(slaveSelectPin, HIGH);*/
-#else
-  SPI.transfer(SPI_CS, _addr >> 8, SPI_CONTINUE);
-  SPI.transfer(SPI_CS, _addr & 0xFF, SPI_CONTINUE);
-  SPI.transfer(SPI_CS, _cb, SPI_CONTINUE);
-  SPI.transfer(SPI_CS, _data);
-#endif    
+    SPI.endTransaction();
+
     return 1;
 }
 
 uint16_t W5500Class::write(uint16_t _addr, uint8_t _cb, const uint8_t *_buf, uint16_t _len)
 {
-#if defined(ARDUINO_ARCH_AVR)|| defined(ARDUINO_ARCH_SAMD)
+    SPI.beginTransaction(wiznet_SPI_settings);
     setSS();
     SPI.transfer(_addr >> 8);
     SPI.transfer(_addr & 0xFF);
@@ -152,58 +125,28 @@ uint16_t W5500Class::write(uint16_t _addr, uint8_t _cb, const uint8_t *_buf, uin
         SPI.transfer(_buf[i]);
     }
     resetSS();
-/*#elif defined(ARDUINO_ARCH_SAMD)
-	digitalWrite(slaveSelectPin, LOW);
-	SPI.transfer(_addr >> 8);
-    SPI.transfer(_addr & 0xFF);
-    SPI.transfer(_cb);
-    for (uint16_t i=0; i<_len; i++){
-        SPI.transfer(_buf[i]);
-    }
-    digitalWrite(slaveSelectPin, HIGH);*/
-#else
-  uint16_t i;
-  SPI.transfer(SPI_CS, _addr >> 8, SPI_CONTINUE);
-  SPI.transfer(SPI_CS, _addr & 0xFF, SPI_CONTINUE);
-  SPI.transfer(SPI_CS, _cb, SPI_CONTINUE);
-    for (i=0; i<_len-1; i++){
-	SPI.transfer(SPI_CS, _buf[i], SPI_CONTINUE);
-  }
-	SPI.transfer(SPI_CS, _buf[i]);
+    SPI.endTransaction();
 
-#endif    
     return _len;
 }
 
 uint8_t W5500Class::read(uint16_t _addr, uint8_t _cb)
 {
-#if defined(ARDUINO_ARCH_AVR) || defined(ARDUINO_ARCH_SAMD)
+    SPI.beginTransaction(wiznet_SPI_settings);
     setSS();
     SPI.transfer(_addr >> 8);
     SPI.transfer(_addr & 0xFF);
     SPI.transfer(_cb);
     uint8_t _data = SPI.transfer(0);
     resetSS();
-/*#elif defined(ARDUINO_ARCH_SAMD)
-	digitalWrite(slaveSelectPin, LOW);
-    SPI.transfer(_addr >> 8);
-    SPI.transfer(_addr & 0xFF);
-    SPI.transfer(_cb);
-    uint8_t _data = SPI.transfer(0);
-    digitalWrite(slaveSelectPin, HIGH);*/
+    SPI.endTransaction();
 
-#else
-    SPI.transfer(SPI_CS, _addr >> 8, SPI_CONTINUE);
-    SPI.transfer(SPI_CS, _addr & 0xFF, SPI_CONTINUE);
-    SPI.transfer(SPI_CS, _cb, SPI_CONTINUE);
-    uint8_t _data = SPI.transfer(SPI_CS, 0);
-#endif    
     return _data;
 }
 
 uint16_t W5500Class::read(uint16_t _addr, uint8_t _cb, uint8_t *_buf, uint16_t _len)
 { 
-#if defined(ARDUINO_ARCH_AVR) || defined(ARDUINO_ARCH_SAMD)
+    SPI.beginTransaction(wiznet_SPI_settings);
     setSS();
     SPI.transfer(_addr >> 8);
     SPI.transfer(_addr & 0xFF);
@@ -212,28 +155,8 @@ uint16_t W5500Class::read(uint16_t _addr, uint8_t _cb, uint8_t *_buf, uint16_t _
         _buf[i] = SPI.transfer(0);
     }
     resetSS();
-/*#elif defined(ARDUINO_ARCH_SAMD)
-	digitalWrite(slaveSelectPin, LOW);	
-    SPI.transfer(_addr >> 8);
-    SPI.transfer(_addr & 0xFF);
-    SPI.transfer(_cb);
-    for (uint16_t i=0; i<_len; i++){
-        _buf[i] = SPI.transfer(0);
-    }
-    digitalWrite(slaveSelectPin, HIGH);*/
+    SPI.endTransaction();
 
-#else
-  	uint16_t i;
-    SPI.transfer(SPI_CS, _addr >> 8, SPI_CONTINUE);
-    SPI.transfer(SPI_CS, _addr & 0xFF, SPI_CONTINUE);
-    SPI.transfer(SPI_CS, _cb, SPI_CONTINUE);
-  for (i=0; i<_len-1; i++){
-    _buf[i] = SPI.transfer(SPI_CS, 0, SPI_CONTINUE);
-  }
-    _buf[_len-1] = SPI.transfer(SPI_CS, 0);
-	    
-
-#endif    
     return _len;
 }
 
