@@ -18,6 +18,8 @@
 
 #include <SPI.h>
 
+#define SPI_ETHERNET_SETTINGS SPISettings(14000000, MSBFIRST, SPI_MODE0)
+
 extern uint8_t SPI_CS;
 
 
