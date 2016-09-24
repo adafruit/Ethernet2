@@ -167,4 +167,21 @@ void W5500Class::execCmdSn(SOCKET s, SockCMD _cmd) {
     while (readSnCR(s))
     ;
 }
+
+
+uint8_t W5500Class::readVersion(void)
+{
+    SPI.beginTransaction(wiznet_SPI_settings);
+    setSS();
+    SPI.transfer( 0x00 );
+    SPI.transfer( 0x39 );
+    SPI.transfer( 0x01);
+    uint8_t _data = SPI.transfer(0);
+    resetSS();
+    SPI.endTransaction();
+
+    return _data;
+}
+
+
 //#endif

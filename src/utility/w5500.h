@@ -131,6 +131,7 @@ class W5500Class {
 
 public:
   void init(uint8_t ss_pin = 10);
+  uint8_t readVersion(void);
 
   /**
    * @brief	This function is being used for copy the data form Receive buffer of the chip to application buffer.
