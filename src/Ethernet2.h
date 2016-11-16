@@ -29,7 +29,7 @@ public:
   static uint8_t _state[MAX_SOCK_NUM];
   static uint16_t _server_port[MAX_SOCK_NUM];
 
-  EthernetClass() { w5500_cspin = 10; }
+  EthernetClass() { _dhcp = NULL; w5500_cspin = 10; }
   void init(uint8_t _cspin = 10) { w5500_cspin = _cspin; }
 
 #if defined(WIZ550io_WITH_MACADDRESS)
