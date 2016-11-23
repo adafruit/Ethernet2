@@ -1,40 +1,42 @@
-Ethernet "2" Library for WIZNET 5500 ONLY!
-========
+Ethernet "2" Library for Arduino
+================================
 
-doesn't work with other chipsets :)
+This Arduino library is for shields that use the **Wiznet [W5500]** chipset only.
+It does **not** work with other chipsets, such as the original Arduino Ethernet shield which
+uses the Wiznet [W5100] chipset.
+
+For more information about this library please visit us at: 
+http://www.arduino.cc/en/Reference/Ethernet
 
 
-Arduino
-========
+W5500 Shields
+-------------
 
-* Arduino is an open-source tool used for building electronics projects. Arduino consists of a physical programmable circuit board (often referred to as a micro-controller) and a development environment, or IDE (Integrated Development Environment) that runs on your computer, used to write and upload computer code to the board
+* [Adafruit W5500 Ethernet Shield](https://www.adafruit.com/products/2971)
+* [Arduino Ethernet Shield v2](https://www.arduino.cc/en/Main/ArduinoEthernetShieldV2)
+* [Industruino Ethernet module](https://industruino.com/shop/product/ethernet-expansion-module-10)
+* [Wiznet W5500 Ethernet Shield](http://www.wiznet.co.kr/product-item/w5500-ethernet-shield/)
 
-* For more information, please consult the website at: http://www.arduino.org/
 
-* To report a *bug* in the software or to request *a simple enhancement*, please go to:
-http://github.com/arduino-org/Arduino/issues
+License
+-------
 
-If you're interested in modifying or extending the [Arduino.org](http://arduino.org) software, we would be very happy if you did it! If you want to integrate your work into the official release please create a pull request at : https://github.com/arduino-org/Arduino/compare/
+Copyright (c) 2009-2016 Arduino LLC. All right reserved.
 
-If you're interested in collaborating please contact us!
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
 
-Installation
-------------
-Ready-to-run software and instructions are available on : http://www.arduino.org/downloads
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+Lesser General Public License for more details.
 
-[Arduino.org](http://arduino.org) IDE is at this time developed, maintained and supported by the Arduino.org team: [support@arduino.org](mailto:support@arduino.org)
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
-Credits
---------
-[Arduino.org](http://arduino.org) is an open source project, developed by many and based on:
 
-* The Arduino.cc IDE: http://www.arduino.cc/ 
-* The Wiring project: http://www.wiring.org.co/
-* The Processing project: http://processing.org
-
-A special thanks to  Daniela Antonietti, Hernando Barragán, David Cuartielles, Ben Fry, Tom Igoe, Gianluca Martino, David A. Mellis, Massimo Banzi and Casey Reas for their works and inspirations.
-
-Arduino uses the [GNU avr-gcc toolchain](http://gcc.gnu.org/wiki/avr-gcc), [avrdude](http://www.nongnu.org/avrdude/), [avr-libc](http://www.nongnu.org/avr-libc/), and code from
-[Processing](http://www.processing.org) and [Wiring](http://wiring.org.co).
-
-Icon and about image designed by [ToDo](http://www.todo.to.it/)
+[W5100]:                   http://www.wiznet.co.kr/product-item/w5100/
+[W5500]:                   http://www.wiznet.co.kr/product-item/w5500/
