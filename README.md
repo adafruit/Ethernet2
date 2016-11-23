@@ -1,3 +1,9 @@
+Ethernet "2" Library for WIZNET 5500 ONLY!
+========
+
+doesn't work with other chipsets :)
+
+
 Arduino
 ========
 
