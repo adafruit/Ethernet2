@@ -21,6 +21,9 @@ uint16_t EthernetClass::_server_port[MAX_SOCK_NUM] = { 0, };
 int EthernetClass::begin(void)
 {
   byte mac_address[6] ={0,};
+  if (_dhcp != NULL) {
+    delete _dhcp;
+  }
   _dhcp = new DhcpClass();
 
   // Initialise the basic info
@@ -78,6 +81,9 @@ void EthernetClass::begin(IPAddress local_ip, IPAddress dns_server, IPAddress ga
 #else
 int EthernetClass::begin(uint8_t *mac_address)
 {
+   if (_dhcp != NULL) {
+     delete _dhcp;
+   }
   _dhcp = new DhcpClass();
   // Initialise the basic info
   w5500.init(w5500_cspin);
