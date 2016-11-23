@@ -22,7 +22,7 @@
 W5500Class w5500;
 
 // SPI details
-SPISettings wiznet_SPI_settings(800000, MSBFIRST, SPI_MODE0);
+SPISettings wiznet_SPI_settings(8000000, MSBFIRST, SPI_MODE0);
 uint8_t SPI_CS;
 
 void W5500Class::init(uint8_t ss_pin)
