@@ -331,13 +331,19 @@ uint8_t DhcpClass::parseDHCPResponse(unsigned long responseTimeout, uint32_t& tr
                     break;
                 
                 case dns :
-                    
 					opt_len = _dhcpUdpSocket.read();
                     _dhcpUdpSocket.read(_dhcpDnsServerIp, 4);
                     for (int i = 0; i < opt_len-4; i++)
                     {
                         _dhcpUdpSocket.read();
                     }
+                    break;
+                    
+                case domainName:
+                    opt_len = _dhcpUdpSocket.read();
+                    _dhcpDnsdomainName = (char*)malloc(sizeof(char)*opt_len+1);
+                    _dhcpUdpSocket.read(_dhcpDnsdomainName, opt_len);
+                    _dhcpDnsdomainName[opt_len] = '\0';
                     break;
                 
                 case dhcpServerIdentifier :
@@ -483,6 +489,11 @@ IPAddress DhcpClass::getDhcpServerIp()
 IPAddress DhcpClass::getDnsServerIp()
 {
     return IPAddress(_dhcpDnsServerIp);
+}
+
+char* DhcpClass::getDnsDomainName()
+{
+    return _dhcpDnsdomainName;
 }
 
 void DhcpClass::printByte(char * buf, uint8_t n ) {
