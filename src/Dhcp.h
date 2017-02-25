@@ -144,6 +144,7 @@ private:
   uint8_t  _dhcpMacAddr[6];
   uint8_t  _dhcpLocalIp[4];
   char* _dhcpDnsdomainName;
+  char* _dhcpHostName;
   uint8_t  _dhcpSubnetMask[4];
   uint8_t  _dhcpGatewayIp[4];
   uint8_t  _dhcpDhcpServerIp[4];
@@ -172,6 +173,7 @@ public:
   IPAddress getDhcpServerIp();
   IPAddress getDnsServerIp();
   char* getDnsDomainName();
+  char* getHostName();
   
   int beginWithDHCP(uint8_t *, unsigned long timeout = 60000, unsigned long responseTimeout = 5000);  
   int checkLease();
