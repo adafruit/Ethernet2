@@ -41,6 +41,8 @@ int EthernetClass::begin(void)
     w5500.setGatewayIp(_dhcp->getGatewayIp().raw_address());
     w5500.setSubnetMask(_dhcp->getSubnetMask().raw_address());
     _dnsServerAddress = _dhcp->getDnsServerIp();
+    _dnsDomainName = _dhcp->getDnsDomainName();
+    _hostName = _dhcp->getHostName();
   }
 
   return ret;
@@ -100,6 +102,8 @@ int EthernetClass::begin(uint8_t *mac_address)
     w5500.setGatewayIp(_dhcp->getGatewayIp().raw_address());
     w5500.setSubnetMask(_dhcp->getSubnetMask().raw_address());
     _dnsServerAddress = _dhcp->getDnsServerIp();
+    _dnsDomainName = _dhcp->getDnsDomainName();
+    _hostName = _dhcp->getHostName();
   }
 
   return ret;
@@ -157,6 +161,8 @@ int EthernetClass::maintain(){
         w5500.setGatewayIp(_dhcp->getGatewayIp().raw_address());
         w5500.setSubnetMask(_dhcp->getSubnetMask().raw_address());
         _dnsServerAddress = _dhcp->getDnsServerIp();
+        _dnsDomainName = _dhcp->getDnsDomainName();
+        _hostName = _dhcp->getHostName();
         break;
       default:
         //this is actually a error, it will retry though
@@ -190,6 +196,14 @@ IPAddress EthernetClass::gatewayIP()
 IPAddress EthernetClass::dnsServerIP()
 {
   return _dnsServerAddress;
+}
+
+char* EthernetClass::dnsDomainName(){
+    return _dnsDomainName;
+}
+
+char* EthernetClass::hostName(){
+    return _hostName;
 }
 
 EthernetClass Ethernet;

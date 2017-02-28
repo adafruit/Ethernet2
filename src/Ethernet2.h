@@ -22,6 +22,8 @@
 class EthernetClass {
 private:
   IPAddress _dnsServerAddress;
+  char* _dnsDomainName;
+  char* _hostName;
   DhcpClass* _dhcp;
 public:
   uint8_t w5500_cspin;
@@ -60,6 +62,8 @@ public:
   IPAddress subnetMask();
   IPAddress gatewayIP();
   IPAddress dnsServerIP();
+  char* dnsDomainName();
+  char* hostName();
 
   friend class EthernetClient;
   friend class EthernetServer;
