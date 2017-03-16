@@ -177,6 +177,7 @@ public:
   
   int beginWithDHCP(uint8_t *, unsigned long timeout = 60000, unsigned long responseTimeout = 5000);  
   int checkLease();
+  ~DhcpClass();
 };
 
 #endif

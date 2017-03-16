@@ -340,12 +340,18 @@ uint8_t DhcpClass::parseDHCPResponse(unsigned long responseTimeout, uint32_t& tr
                     break;
                     
                 case domainName:
+                    if(_dhcpDnsdomainName != NULL){
+                        free(_dhcpDnsdomainName);
+                    }
                     opt_len = _dhcpUdpSocket.read();
                     _dhcpDnsdomainName = (char*)malloc(sizeof(char)*opt_len+1);
                     _dhcpUdpSocket.read(_dhcpDnsdomainName, opt_len);
                     _dhcpDnsdomainName[opt_len] = '\0';
                     break;
                 case hostName:
+                    if(_dhcpHostName != NULL){
+                        free(_dhcpHostName);
+                    }
                     opt_len = _dhcpUdpSocket.read();
                     _dhcpHostName = (char*)malloc(sizeof(char)*opt_len+1);
                     _dhcpUdpSocket.read(_dhcpHostName, opt_len);
@@ -515,4 +521,13 @@ void DhcpClass::printByte(char * buf, uint8_t n ) {
     char c = m - 16 * n;
     *str-- = c < 10 ? c + '0' : c + 'A' - 10;
   } while(n);
+}
+
+DhcpClass::~DhcpClass(){
+  if(_dhcpDnsdomainName != NULL){
+    free(_dhcpDnsdomainName);
+  }
+  if(_dhcpHostName != NULL){
+    free(_dhcpHostName);
+  }
 }
