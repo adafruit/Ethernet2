@@ -27,12 +27,25 @@ uint8_t SPI_CS;
 
 void W5500Class::init(uint8_t ss_pin)
 {
+  #if defined(WIZ550io_WITH_MACADDRESS)
+  byte mac_address[6] ={0,};
+  #endif
   SPI_CS = ss_pin;
 
   delay(1000);
   initSS();
   SPI.begin();
+  
+  // Read the current MAC Address before doing the SW-Reset
+  // needed for the WIZ550io board which contains an embedded MAC Address (set only at HW-Reset)
+  #if defined(WIZ550io_WITH_MACADDRESS)
+  w5500.getMACAddress(mac_address);
+  #endif
   w5500.swReset();
+  #if defined(WIZ550io_WITH_MACADDRESS)
+  w5500.setMACAddress(mac_address);
+  #endif
+  
   for (int i=0; i<MAX_SOCK_NUM; i++) {
     uint8_t cntl_byte = (0x0C + (i<<5));
     write( 0x1E, cntl_byte, 2); //0x1E - Sn_RXBUF_SIZE

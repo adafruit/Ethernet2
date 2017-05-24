@@ -64,6 +64,10 @@ public:
   IPAddress dnsServerIP();
   char* dnsDomainName();
   char* hostName();
+  
+  // Read the MAC address from the shield (useful when using WIZ550io where the Address can be set by the shield itself)
+  // Writes 6 bytes of MAC to the address provided
+  void macAddress(uint8_t *mac);
 
   friend class EthernetClient;
   friend class EthernetServer;

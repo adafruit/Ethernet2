@@ -20,6 +20,7 @@
 
 extern uint8_t SPI_CS;
 
+//#define WIZ550io_WITH_MACADDRESS // Use assigned MAC address of WIZ550io
 
 typedef uint8_t SOCKET;
 /*

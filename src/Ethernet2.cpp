@@ -206,4 +206,8 @@ char* EthernetClass::hostName(){
     return _hostName;
 }
 
+void EthernetClass::macAddress(uint8_t *mac){
+    w5500.getMACAddress(mac);
+}
+
 EthernetClass Ethernet;
