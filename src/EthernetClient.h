@@ -26,6 +26,8 @@ public:
   virtual operator bool();
   virtual bool operator==(const EthernetClient&);
   virtual bool operator!=(const EthernetClient& rhs) { return !this->operator==(rhs); };
+    
+  IPAddress remoteIP();
 
   friend class EthernetServer;
   

@@ -156,6 +156,16 @@ uint8_t EthernetClient::status() {
   return w5500.readSnSR(_sock);
 }
 
+IPAddress EthernetClient::remoteIP(){
+  if (status() == SnSR::CLOSED) {
+    return INADDR_NONE;  
+  } else {
+    uint8_t addr[4];
+    w5500.readSnDIPR(_sock, (unsigned char*)&addr);
+    return IPAddress(addr);
+  }
+}
+
 // the next function allows us to use the client returned by
 // EthernetServer::available() as the condition in an if-statement.
 
