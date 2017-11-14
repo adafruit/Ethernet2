@@ -220,3 +220,34 @@ void EthernetUDP::flush()
   }
 }
 
+uint8_t EthernetUDP::beginMulticast(IPAddress ip, uint16_t port)
+{
+    if (_sock != MAX_SOCK_NUM)
+        return 0;
+    
+    for (int i = 0; i < MAX_SOCK_NUM; i++) {
+        uint8_t s = w5500.readSnSR(i);
+        if (s == SnSR::CLOSED || s == SnSR::FIN_WAIT) {
+            _sock = i;
+            break;
+        }
+    }
+    
+    if (_sock == MAX_SOCK_NUM)
+        return 0;
+    
+    // Calculate MAC address from Multicast IP Address
+    byte mac[] = {  0x01, 0x00, 0x5E, 0x00, 0x00, 0x00 };
+    
+    mac[3] = ip[1] & 0x7F;
+    mac[4] = ip[2];
+    mac[5] = ip[3];
+    
+    w5500.writeSnDIPR(_sock, rawIPAddress(ip));   //239.255.0.1
+    w5500.writeSnDPORT(_sock, port);
+    w5500.writeSnDHAR(_sock,mac);
+    
+    _remaining = 0;
+    socket(_sock, SnMR::UDP, port, SnMR::MULTI);
+    return 1;
+}

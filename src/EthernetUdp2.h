@@ -100,6 +100,8 @@ public:
   virtual IPAddress remoteIP() { return _remoteIP; };
   // Return the port of the host who sent the current incoming packet
   virtual uint16_t remotePort() { return _remotePort; };
+  // Subscribe to multicast channel
+  virtual uint8_t beginMulticast(IPAddress ip, uint16_t port);
 };
 
 #endif
