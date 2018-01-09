@@ -167,7 +167,14 @@ void DhcpClass::send_DHCP_MESSAGE(uint8_t messageType, uint16_t secondsElapsed)
     // ciaddr: already zeroed
     // yiaddr: already zeroed
     // siaddr: already zeroed
-    // giaddr: already zeroed
+    // giaddr: already zeroed	
+    
+    if(messageType == DHCP_REQUEST) {
+        buffer[12] = _dhcpLocalIp[0];
+        buffer[13] = _dhcpLocalIp[1];
+        buffer[14] = _dhcpLocalIp[2];
+        buffer[15] = _dhcpLocalIp[3];
+    }
 
     //put data in w5500 transmit buffer
     _dhcpUdpSocket.write(buffer, 28);
