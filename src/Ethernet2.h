@@ -18,7 +18,6 @@
 #include "Dhcp.h"
 
 
-
 class EthernetClass {
 private:
   IPAddress _dnsServerAddress;

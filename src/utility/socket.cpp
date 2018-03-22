@@ -6,6 +6,7 @@
  
 #include "utility/w5500.h"
 #include "utility/socket.h"
+#include "utility/util.h"
 
 static uint16_t local_port;
 
@@ -357,15 +358,13 @@ uint16_t igmpsend(SOCKET s, const uint8_t * buf, uint16_t len)
 
 uint16_t bufferData(SOCKET s, uint16_t offset, const uint8_t* buf, uint16_t len)
 {
-  uint16_t ret =0;
-  if (len > w5500.getTXFreeSize(s))
-  {
-    ret = w5500.getTXFreeSize(s); // check size not to exceed MAX size.
-  }
-  else
+  uint16_t ret = w5500.getTXFreeSize(s);
+  DEBUG_PRINT("TX Free Size: "); DEBUG_PRINTLN(ret);
+  if (len < ret)
   {
     ret = len;
   }
+  DEBUG_PRINT("Send data processing offset "); DEBUG_PRINT(offset); DEBUG_PRINT(" size "); DEBUG_PRINTLN(ret);
   w5500.send_data_processing_offset(s, offset, buf, ret);
   return ret;
 }

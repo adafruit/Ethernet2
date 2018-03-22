@@ -10,6 +10,7 @@
  
 #include "Ethernet2.h"
 #include "Dhcp.h"
+#include "utility/util.h"
 
 // XXX: don't make assumptions about the value of MAX_SOCK_NUM.
 uint8_t EthernetClass::_state[MAX_SOCK_NUM] = { 0, };
@@ -86,20 +87,31 @@ int EthernetClass::begin(uint8_t *mac_address)
    if (_dhcp != NULL) {
      delete _dhcp;
    }
+  DEBUG_PRINTLN("Create DHCP class");
   _dhcp = new DhcpClass();
   // Initialise the basic info
+  DEBUG_PRINTLN("w5500 init");
   w5500.init(w5500_cspin);
+  DEBUG_PRINT("Read Version: ");
+  DEBUG_PRINTLN(w5500.readVersion());
+  DEBUG_PRINTLN("Set MAC");
   w5500.setMACAddress(mac_address);
+  DEBUG_PRINTLN("Set IP address");
   w5500.setIPAddress(IPAddress(0,0,0,0).raw_address());
 
   // Now try to get our config info from a DHCP server
+  DEBUG_PRINT("Begin with DHCP...");
   int ret = _dhcp->beginWithDHCP(mac_address);
+  DEBUG_PRINTLN(ret);
   if(ret == 1)
   {
     // We've successfully found a DHCP server and got our configuration info, so set things
     // accordingly
+    DEBUG_PRINTLN("Set DHCP IP");
     w5500.setIPAddress(_dhcp->getLocalIp().raw_address());
+    DEBUG_PRINTLN("Set DHCP Gateway");
     w5500.setGatewayIp(_dhcp->getGatewayIp().raw_address());
+    DEBUG_PRINTLN("Set DHCP subnet");
     w5500.setSubnetMask(_dhcp->getSubnetMask().raw_address());
     _dnsServerAddress = _dhcp->getDnsServerIp();
     _dnsDomainName = _dhcp->getDnsDomainName();
@@ -135,10 +147,17 @@ void EthernetClass::begin(uint8_t *mac_address, IPAddress local_ip, IPAddress dn
 
 void EthernetClass::begin(uint8_t *mac, IPAddress local_ip, IPAddress dns_server, IPAddress gateway, IPAddress subnet)
 {
+  DEBUG_PRINTLN("w5500.init()")
   w5500.init(w5500_cspin);
+  DEBUG_PRINT("Read Version: ");
+  DEBUG_PRINTLN(w5500.readVersion());
+  DEBUG_PRINTLN("Setting MAC");
   w5500.setMACAddress(mac);
+  DEBUG_PRINTLN("Setting IP");
   w5500.setIPAddress(local_ip.raw_address());
+  DEBUG_PRINTLN("Setting gateway");
   w5500.setGatewayIp(gateway.raw_address());
+  DEBUG_PRINTLN("Setting ");
   w5500.setSubnetMask(subnet.raw_address());
   _dnsServerAddress = dns_server;
 }

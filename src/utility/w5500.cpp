@@ -18,11 +18,25 @@
 #include "utility/w5500.h"
 //#if defined(W5500_ETHERNET_SHIELD)
 
+//#define SPI_DEBUG
+
+void printHex(uint8_t hex) {
+  if (hex < 0x10) {
+    Serial.print("0");
+  }
+  Serial.print(hex, HEX);
+}
+
+void printHex(uint16_t hex) {
+  printHex((uint8_t)(hex >> 8));
+  printHex((uint8_t)(hex & 0xFF));
+}
+
 // W5500 controller instance
 W5500Class w5500;
 
 // SPI details
-SPISettings wiznet_SPI_settings(8000000, MSBFIRST, SPI_MODE0);
+SPISettings wiznet_SPI_settings(4000000, MSBFIRST, SPI_MODE0);
 uint8_t SPI_CS;
 
 void W5500Class::init(uint8_t ss_pin)
@@ -108,6 +122,12 @@ uint8_t W5500Class::write(uint16_t _addr, uint8_t _cb, uint8_t _data)
     SPI.transfer(_addr & 0xFF);
     SPI.transfer(_cb);
     SPI.transfer(_data);
+#ifdef SPI_DEBUG
+    Serial.print("\tWrite $0x");  printHex(_addr);
+    Serial.print(" Ctrl 0x"); printHex(_cb);
+    Serial.print(" -> 0x"); printHex(_data);
+    Serial.println();
+#endif
     resetSS();
     SPI.endTransaction();
 
@@ -121,9 +141,24 @@ uint16_t W5500Class::write(uint16_t _addr, uint8_t _cb, const uint8_t *_buf, uin
     SPI.transfer(_addr >> 8);
     SPI.transfer(_addr & 0xFF);
     SPI.transfer(_cb);
+
+#ifdef SPI_DEBUG
+    Serial.print("\tWrite $0x");  printHex(_addr);
+    Serial.print(" Ctrl 0x"); printHex(_cb);
+    Serial.print(" -> ("); Serial.print(_len); Serial.print("): ");
+#endif
+
     for (uint16_t i=0; i<_len; i++){
         SPI.transfer(_buf[i]);
+
+#ifdef SPI_DEBUG
+	Serial.print("0x"); printHex(_buf[i]); Serial.print(", ");
+#endif
     }
+#ifdef SPI_DEBUG
+    Serial.println();
+#endif
+
     resetSS();
     SPI.endTransaction();
 
@@ -138,6 +173,14 @@ uint8_t W5500Class::read(uint16_t _addr, uint8_t _cb)
     SPI.transfer(_addr & 0xFF);
     SPI.transfer(_cb);
     uint8_t _data = SPI.transfer(0);
+
+#ifdef SPI_DEBUG
+    Serial.print("\tRead $0x");  printHex(_addr);
+    Serial.print(" Ctrl 0x"); printHex(_cb);
+    Serial.print(" <- 0x"); printHex(_data);
+    Serial.println();
+#endif
+
     resetSS();
     SPI.endTransaction();
 
@@ -151,9 +194,24 @@ uint16_t W5500Class::read(uint16_t _addr, uint8_t _cb, uint8_t *_buf, uint16_t _
     SPI.transfer(_addr >> 8);
     SPI.transfer(_addr & 0xFF);
     SPI.transfer(_cb);
+
+#ifdef SPI_DEBUG
+    Serial.print("\tRead $0x");  printHex(_addr);
+    Serial.print(" Ctrl 0x"); printHex(_cb);
+    Serial.print(" : ");
+#endif
+
     for (uint16_t i=0; i<_len; i++){
         _buf[i] = SPI.transfer(0);
+#ifdef SPI_DEBUG
+	Serial.print("0x"); printHex(_buf[i]); Serial.print(", ");
+#endif
     }
+
+#ifdef SPI_DEBUG
+    Serial.println();
+#endif
+
     resetSS();
     SPI.endTransaction();
 
