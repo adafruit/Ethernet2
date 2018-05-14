@@ -1,4 +1,4 @@
-/Author: Martin Chlebovec
+//Author: Martin Chlebovec
 //Web: https://arduino.php5.sk
 //Support: http://paypal.me/chlebovec
 #include <SPI.h>
