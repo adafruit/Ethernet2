@@ -3,10 +3,10 @@
 //Support: http://paypal.me/chlebovec
 #include <SPI.h>
 #include <Ethernet2.h>
-int led = 6;
+const int led = 6;
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 char serverName[] = "www.arduino.php5.sk"; // webserver
-IPAddress ip(192, 168, 1, 254);
+IPAddress ip(192, 168, 1, 254); //for instance in 192.168.1.0 /24 network
 EthernetClient client;
 String readString;        //our variable
 int x=0; //counter of line
