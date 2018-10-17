@@ -13,18 +13,35 @@ EthernetServer::EthernetServer(uint16_t port)
   _port = port;
 }
 
+void EthernetServer::init()
+{
+	for (int sock = 0; sock < MAX_SOCK_NUM; sock++) {
+		EthernetClient client(sock);
+		if (client.status() == SnSR::CLOSED) {
+			socket(sock, SnMR::TCP, _port, 0);
+			listen(sock);
+			EthernetClass::_server_port[sock] = _port;
+			break;
+		}
+	}
+}
+
+// 20181016 https://kmpelectronics.eu/ Plamen Kovandjiev - We added support for ESP32.
+#ifdef ESP32
+void EthernetServer::begin(uint16_t port)
+{
+	if (port) {
+		_port = port;
+	}
+
+	init();
+}
+#else
 void EthernetServer::begin()
 {
-  for (int sock = 0; sock < MAX_SOCK_NUM; sock++) {
-    EthernetClient client(sock);
-    if (client.status() == SnSR::CLOSED) {
-      socket(sock, SnMR::TCP, _port, 0);
-      listen(sock);
-      EthernetClass::_server_port[sock] = _port;
-      break;
-    }
-  }  
+	init();
 }
+#endif
 
 void EthernetServer::accept()
 {
