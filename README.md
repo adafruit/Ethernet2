@@ -1,21 +1,7 @@
-Ethernet "2" Library for Arduino
-================================
+# Deprecated/Archived Library 
 
-This Arduino library is for shields that use the **Wiznet [W5500]** chipset only.
-It does **not** work with other chipsets, such as the original Arduino Ethernet shield which
-uses the Wiznet [W5100] chipset.
+This library is no longer going to be used, since the official Arduino library has been updated and works great https://github.com/arduino-libraries/Ethernet
 
-For more information about this library please visit us at: 
-http://www.arduino.cc/en/Reference/Ethernet
-
-
-W5500 Shields
--------------
-
-* [Adafruit W5500 Ethernet Shield](https://www.adafruit.com/products/2971)
-* [Arduino Ethernet Shield v2](https://www.arduino.cc/en/Main/ArduinoEthernetShieldV2)
-* [Industruino Ethernet module](https://industruino.com/shop/product/ethernet-expansion-module-10)
-* [Wiznet W5500 Ethernet Shield](http://www.wiznet.co.kr/product-item/w5500-ethernet-shield/)
 
 
 License
